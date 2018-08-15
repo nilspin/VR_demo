@@ -12,10 +12,10 @@ float R = 30.0;
 void main()
 {
 //    texCoord = texCoords;
-    gl_Position = MVP*vec4(position,1.0);
-//    float x = pos.x + R*cos(pos.x*1.9*pi/30);
-//    float y = pos.y;
-//    float z = R*sin(pos.x*1.9*pi/30) + pos.z ;
+    vec3 pos = position;
+    float x = pos.x + R*cos(pos.x*1.9*pi/30);
+    float y = pos.y;
+    float z = R*sin(pos.x*1.9*pi/30) + pos.z ;
 //	gl_Position = MVP*vec4(pos, 1.0f);
-//	gl_Position = MVP*vec4(x, y, z, 1.0f);
+	gl_Position = MVP*vec4(x, y, z, 1.0f);
 }
