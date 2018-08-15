@@ -26,6 +26,8 @@ private:
 	int imgHeight = 0;
 	int channels = 0;
 	float wide = 0.1;
+	const int bufferHeight = 30;
+	const int bufferWidth = 30;
 
 	//Window and events
 	Window window;
@@ -50,9 +52,11 @@ private:
 	uint8_t *right=nullptr;
 	
 	//OpenGL Buffer objects
-	vector<glm::vec2>	rectangle;
+	vector<glm::vec3>	rectangle;
+	vector<uint> indices;
 	GLuint drawVBO;	//buffer to store rectangle coords
 	GLuint texCoordVBO;	//buffer to hold texture coordinates
+	GLuint indexVBO;
 	GLuint drawVAO;	//vertex array object
 
 };
