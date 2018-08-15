@@ -110,7 +110,7 @@ void Application::run() {
     glVertexAttribPointer(drawShader->attribute("position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-    //glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_TRIANGLE_STRIP, realIndices.size(), GL_UNSIGNED_INT, 0);
     glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
     //glBindVertexArray(drawVAO);
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, bufferWidth*bufferHeight);
@@ -217,7 +217,7 @@ void Application::setupBuffers() {
   //Bind index buffer
   glGenBuffers(1, &indexVBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(uint), realIndices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, realIndices.size()*sizeof(uint), realIndices.data(), GL_STATIC_DRAW);
 
   glBindVertexArray(0);	//unbind VAO
   glBindBuffer(GL_ARRAY_BUFFER, 0);
