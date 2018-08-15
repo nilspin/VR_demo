@@ -105,10 +105,14 @@ void Application::run() {
 
 
     //first depthMap
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-    //glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(drawVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, bufferWidth*bufferHeight);
+    glBindBuffer(GL_ARRAY_BUFFER, drawVBO);
+    glEnableVertexAttribArray(drawShader->attribute("position"));
+    glVertexAttribPointer(drawShader->attribute("position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
+    glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
+    //glBindVertexArray(drawVAO);
+    //glDrawArrays(GL_TRIANGLE_STRIP, 0, bufferWidth*bufferHeight);
     //glDrawArrays(GL_POINTS, 0, bufferWidth*bufferHeight);
     //second depthMap
     //glUniform1i(drawShader->uniform("depthTexture"), 1);
@@ -162,7 +166,7 @@ void Application::setupBuffers() {
 
   for(int i=0;i<bufferWidth;++i){
     for(int j=0;j<bufferHeight;++j){
-      rectangle[i*480+j] = vec3(i,j, 0);
+      rectangle[i*bufferWidth+j] = vec3(i,j, 0);
     }
   }
   //Now build indices
