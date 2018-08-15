@@ -110,7 +110,8 @@ void Application::run() {
     glVertexAttribPointer(drawShader->attribute("position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-    glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
     //glBindVertexArray(drawVAO);
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, bufferWidth*bufferHeight);
     //glDrawArrays(GL_POINTS, 0, bufferWidth*bufferHeight);
@@ -128,7 +129,7 @@ void Application::run() {
 
 void Application::setupShaders() {
   drawShader = (make_unique<ShaderProgram>());
-  drawShader->initFromFiles("shaders/draw.vert", "shaders/draw.frag");
+  drawShader->initFromFiles("shaders/draw.vert","shaders/draw.geom", "shaders/draw.frag");
   drawShader->addAttribute("position");
   //drawShader->addAttribute("texCoords");
   //drawShader->addUniform("depthTexture");
@@ -164,9 +165,10 @@ void Application::setupTextures() {
 
 void Application::setupBuffers() {
 
-  for(int i=0;i<bufferWidth;++i){
-    for(int j=0;j<bufferHeight;++j){
-      rectangle[i*bufferWidth+j] = vec3(i,j, 0);
+  int count =0;
+  for(int i=-bufferWidth/2;i<bufferWidth/2;++i){
+    for(int j=-bufferHeight/2;j<bufferHeight/2;++j){
+      rectangle[count++] = vec3(i,j, 0);
     }
   }
   //Now build indices
@@ -185,10 +187,21 @@ void Application::setupBuffers() {
       }
     }
   }
-  indices.pop_back();
+  
   uint indicesCount = indices.size();
 
+  //vector<uint> realIndices;
+  for(int i=0;i<indices.size()-2;++i)
+  {
+    realIndices.emplace_back(indices[i]);
+    realIndices.emplace_back(indices[i+1]);
+    realIndices.emplace_back(indices[i+2]);
+  }
+  std::ofstream fout("indices_dump");
+  for(auto A:indices) {fout<<" "<<A<<" \n";}
+  fout.close();
   std::cout<<"Indices Count : "<<indicesCount<<"\n";
+
   //==========================
   //Create Vertex Array Object
   glGenVertexArrays(1, &drawVAO);
@@ -204,7 +217,7 @@ void Application::setupBuffers() {
   //Bind index buffer
   glGenBuffers(1, &indexVBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(uint), indices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(uint), realIndices.data(), GL_STATIC_DRAW);
 
   glBindVertexArray(0);	//unbind VAO
   glBindBuffer(GL_ARRAY_BUFFER, 0);

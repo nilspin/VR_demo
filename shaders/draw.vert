@@ -2,19 +2,20 @@
 
 //in vec2 texCoords;
 //out vec2 texCoord;
-in vec2 position;
-uniform mat4 MVP;
+in vec3 position;
+//out vec3 v_position;
+//uniform mat4 MVP;
 
 float pi = 3.14159265358;
-float R = 100.0;
+float R = 30.0;
 
 void main()
 {
 //    texCoord = texCoords;
-    vec3 pos = vec3(position, 1.0f);
-//    float x = R*cos(pos.x*2*pi/200);
-//    float y = R*sin(pos.x*2*pi/200);
-//    float z = pos.z*300/480;
-//	gl_Position = MVP*vec4(x,y,z, 1.0f);
-	gl_Position = MVP*vec4(pos, 1.0f);
+    gl_Position = vec4(position,1.0);
+//    float x = pos.x + R*cos(pos.x*1.9*pi/30);
+//    float y = pos.y;
+//    float z = R*sin(pos.x*1.9*pi/30) + pos.z ;
+//	gl_Position = MVP*vec4(pos, 1.0f);
+//	gl_Position = MVP*vec4(x, y, z, 1.0f);
 }
