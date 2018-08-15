@@ -129,7 +129,7 @@ void Application::run() {
 
 void Application::setupShaders() {
   drawShader = (make_unique<ShaderProgram>());
-  drawShader->initFromFiles("shaders/draw.vert","shaders/draw.geom", "shaders/draw.frag");
+  drawShader->initFromFiles("shaders/draw.vert", "shaders/draw.frag");
   drawShader->addAttribute("position");
   //drawShader->addAttribute("texCoords");
   //drawShader->addUniform("depthTexture");
@@ -174,12 +174,12 @@ void Application::setupBuffers() {
   //Now build indices
   indices.push_back(0);
   indices.push_back(bufferWidth);
-  for(int i=1;i<=bufferHeight;++i){
+  for(int i=1;i<bufferHeight;++i){
     for(int j=1;j<bufferWidth;++j){
       indices.push_back((i-1)*bufferWidth + j);
       indices.push_back(i*bufferWidth + j);
 
-      if(j==bufferWidth-1) {
+      if(i<bufferHeight-1 && j==bufferWidth-1) {
         indices.push_back(i*bufferWidth +j);
         indices.push_back(i*bufferWidth);
         indices.push_back(i*bufferWidth);
@@ -198,7 +198,7 @@ void Application::setupBuffers() {
     realIndices.emplace_back(indices[i+2]);
   }
   std::ofstream fout("indices_dump");
-  for(auto A:indices) {fout<<" "<<A<<" \n";}
+  for(int i=0;i<realIndices.size();i+=3) {fout<<realIndices[i]<<" "<<realIndices[i+1]<<" "<<realIndices[i+2]<<" \n";}
   fout.close();
   std::cout<<"Indices Count : "<<indicesCount<<"\n";
 

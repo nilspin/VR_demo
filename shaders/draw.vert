@@ -4,7 +4,7 @@
 //out vec2 texCoord;
 in vec3 position;
 //out vec3 v_position;
-//uniform mat4 MVP;
+uniform mat4 MVP;
 
 float pi = 3.14159265358;
 float R = 30.0;
@@ -12,7 +12,7 @@ float R = 30.0;
 void main()
 {
 //    texCoord = texCoords;
-    gl_Position = vec4(position,1.0);
+    gl_Position = MVP*vec4(position,1.0);
 //    float x = pos.x + R*cos(pos.x*1.9*pi/30);
 //    float y = pos.y;
 //    float z = R*sin(pos.x*1.9*pi/30) + pos.z ;

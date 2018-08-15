@@ -26,8 +26,8 @@ private:
 	int imgHeight = 0;
 	int channels = 0;
 	float wide = 0.1;
-	const int bufferHeight = 4;
-	const int bufferWidth = 4;
+	const int bufferHeight = 3;
+	const int bufferWidth = 5;
 
 	//Window and events
 	Window window;
