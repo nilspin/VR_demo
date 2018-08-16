@@ -9,11 +9,15 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
-find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
 
-set(INCLUDE_DIRS  ${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} )
-set(LIBS ${OPENGL_LIBRARY} ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} )
+set(GLAD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/glad/include")
+set(GLAD_SRC "${GLAD_INCLUDE_DIR}/../src/glad.c")
+add_library("GLAD_LIBRARY" ${GLAD_SRC})
+target_include_directories("GLAD_LIBRARY" PRIVATE "${GLAD_INCLUDE_DIR}")
+
+set(INCLUDE_DIRS  ${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${GLAD_INCLUDE_DIR})
+set(LIBS ${OPENGL_LIBRARY} ${SDL2_LIBRARIES} ${GLAD_LIBRARY})
 
 #specify include directory
 include_directories(INCLUDE_DIRS ${INCLUDE_DIRS} include)
@@ -24,6 +28,7 @@ set( SOURCES
     Window.cpp
     camera.cpp
     ShaderProgram.hpp
+    ${GLAD_SRC}
 )
 
 add_executable( ${PROJECT_NAME} ${SOURCES})

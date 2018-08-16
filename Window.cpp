@@ -30,11 +30,9 @@ bool Window::Initialize()
 	SDL_SetWindowPosition(window, 0,0);
 	context = SDL_GL_CreateContext(window);
 
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		std::cout << "Sorry, but GLEW failed to load.";
-		return 1;
+	if (!gladLoadGL()) {
+		throw std::runtime_error("GLAD initialization failed");
 	}
+
 	return true;
 }

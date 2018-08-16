@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include<GL/glew.h>
+#include<glad/glad.h>
 #include<GL/glu.h>
 #include<GL/gl.h>
 //std stuff
