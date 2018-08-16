@@ -18,6 +18,9 @@ Application::Application() {
   //cam.setPosition(glm::vec3(320, 240, 300));
   cam.setPosition(glm::vec3(0,0,0));
   glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
   setupTextures();
   setupShaders();
   setupBuffers();
@@ -39,11 +42,11 @@ void Application::run() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glBindTexture(GL_TEXTURE_2D, leftTex);
     drawShader->use();
-
     
-    glUniform1i(drawShader->uniform("imageTexture"), leftTex);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, leftTex);
+    glUniform1i(drawShader->uniform("imageTexture"), 0);
     glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(MVP));
 
     glBindVertexArray(drawVAO);
@@ -70,22 +73,21 @@ void Application::run() {
 void Application::setupTextures() {
   glGenTextures(1, &leftTex);
   glBindTexture(GL_TEXTURE_2D, leftTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
-  glGenerateMipmap(GL_TEXTURE_2D);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
+  cout<<"Left Texture handle:"<<leftTex<<"\n";
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glGenerateMipmap(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D,0);
 
   //Texture2
   glGenTextures(1, &rightTex);
   glBindTexture(GL_TEXTURE_2D, rightTex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
-  glGenerateMipmap(GL_TEXTURE_2D);
+
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -93,6 +95,7 @@ void Application::setupTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glGenerateMipmap(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   //TODO: free images here

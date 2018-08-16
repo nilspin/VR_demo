@@ -6,6 +6,7 @@ out vec4 outColor;
 
 void main()
 {
-	outColor = vec4(texture(imageTexture, UV.xy).xyz, 1.0);
+	outColor = texture(imageTexture, UV);
+	//outColor = vec4(texture(imageTexture, UV.xy).xyz, 1.0);
 	//outColor = UV.xyyy;
 }
