@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "ShaderProgram.hpp"
 #include "camera.h"
+#include<cmath>
 
 using namespace std;
 using namespace glm;
@@ -27,8 +28,8 @@ private:
 	int imgHeight = 0;
 	int channels = 0;
 	float wide = 0.1;
-	int bufferHeight = 10;
-	int bufferWidth = 10;
+	int bufferHeight = 12;
+	int bufferWidth = 12;
 
 	//Window and events
 	Window window;
