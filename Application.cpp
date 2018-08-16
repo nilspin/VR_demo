@@ -104,19 +104,20 @@ void Application::setupTextures() {
 void Application::setupBuffers() {
 
   int count =0;
-  for(float i=-bufferWidth/2.0f;i<(float)bufferWidth/2.0f;++i){
-    for(float j=-bufferHeight/2.0f;j<(float)bufferHeight/2.0f;++j){
-      float x = (i+(bufferWidth/2.0f))/(float)bufferWidth;
-      float y = (j+(bufferHeight/2.0f))/(float)bufferHeight;
+  for(float i=0;i<=bufferWidth;++i){
+    for(float j=0;j<=bufferHeight;++j){
+      float x = i/(float)bufferWidth;
+      float y = j/(float)bufferHeight;
       texCoords.push_back(vec2(x,y));
-      rectangle.push_back(vec3(i,j, 0));
-      //count++;
+      rectangle.push_back(vec3(i-(float)bufferWidth/2.0f,j-(float)bufferHeight/2.0f, -5.0f));
+      cout<<i<<" "<<j<<" - "<<x<<" "<<y<<"\n";
     }
   }
   cout<<"Number of Vertices: "<<rectangle.size()<<"\n";
   cout<<"Number of textureCoordinates: "<<texCoords.size()<<"\n";
   
    //Now build indices
+  bufferHeight+=1; bufferWidth+=1;
   indices.push_back(0);
   indices.push_back(bufferWidth);
   for(int i=1;i<bufferHeight;++i){
