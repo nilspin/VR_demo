@@ -17,6 +17,7 @@ Application::Application() {
 //  if(right == nullptr) {cout<<"could not read second image file!"<<endl; exit(0);}
   //cam.setPosition(glm::vec3(320, 240, 300));
   cam.setPosition(glm::vec3(0,0,0));
+  //cam.setLookAt(glm::vec3(1,0,0));
   glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glEnable(GL_DEPTH_TEST);
@@ -110,7 +111,7 @@ void Application::setupBuffers() {
       float y = j/(float)bufferHeight;
       texCoords.push_back(vec2(x,y));
       rectangle.push_back(vec3(i-(float)bufferWidth/2.0f,j-(float)bufferHeight/2.0f, -5.0f));
-      cout<<i<<" "<<j<<" - "<<x<<" "<<y<<"\n";
+      cout<<i-(float)bufferWidth/2.0f<<" "<<j-(float)bufferHeight/2.0f<<" - "<<x<<" "<<y<<"\n";
     }
   }
   cout<<"Number of Vertices: "<<rectangle.size()<<"\n";
