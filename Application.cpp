@@ -9,16 +9,17 @@ SDL_Event event;
 
 Application::Application() {
   rectangle.resize(bufferWidth*bufferHeight);
-  left = stbi_load("assets/left.jpg", &imgWidth, &imgHeight, &channels, 2);
-  right = stbi_load("assets/right.jpg", &imgWidth, &imgHeight, &channels, 2);
+  left = stbi_load("assets/left.jpg", &imgWidth, &imgHeight, &channels, 0);
+  right = stbi_load("assets/right.jpg", &imgWidth, &imgHeight, &channels, 0);
+  cout<<"Image width: "<<imgWidth<<"\nImage height: "<<imgHeight<<"\nChannels: "<<channels<<"\n";
   if(left == nullptr) {cout<<"could not read first image file!"<<endl; exit(0);}
   if(right == nullptr) {cout<<"could not read second image file!"<<endl; exit(0);}
   //cam.setPosition(glm::vec3(320, 240, 300));
-  cam.setPosition(glm::vec3(0,0,100));
-  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  cam.setPosition(glm::vec3(0,0,0));
+  glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
   setupShaders();
   setupBuffers();
-  //setupTextures();
+  setupTextures();
 }
 
 void Application::run() {
@@ -98,20 +99,26 @@ void Application::run() {
 
     drawShader->use();
 
+    glBindTexture(GL_TEXTURE_2D, leftTex);
+    //glUniform1i(drawShader->uniform("imageTexture"), leftTex);
     glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(MVP));
 
     glBindVertexArray(drawVAO);
     //inputSource.UploadDepthToTexture();
 
 
-    //first depthMap
+    //Bind buffers
     glBindBuffer(GL_ARRAY_BUFFER, drawVBO);
     glEnableVertexAttribArray(drawShader->attribute("position"));
     glVertexAttribPointer(drawShader->attribute("position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+    glBindBuffer(GL_ARRAY_BUFFER, texCoordVBO);
+    glEnableVertexAttribArray(drawShader->attribute("texCoords"));
+    glVertexAttribPointer(drawShader->attribute("texCoords"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-    //glDrawElements(GL_TRIANGLE_STRIP, realIndices.size(), GL_UNSIGNED_INT, 0);
-    glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, realIndices.size(), GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
     //glBindVertexArray(drawVAO);
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, bufferWidth*bufferHeight);
     //glDrawArrays(GL_POINTS, 0, bufferWidth*bufferHeight);
@@ -131,8 +138,8 @@ void Application::setupShaders() {
   drawShader = (make_unique<ShaderProgram>());
   drawShader->initFromFiles("shaders/draw.vert", "shaders/draw.frag");
   drawShader->addAttribute("position");
-  //drawShader->addAttribute("texCoords");
-  //drawShader->addUniform("depthTexture");
+  drawShader->addAttribute("texCoords");
+  //drawShader->addUniform("imageTexture");
   drawShader->addUniform("MVP");
   //drawShader->addUniform("shadeColor");
 }
@@ -140,7 +147,7 @@ void Application::setupShaders() {
 void Application::setupTextures() {
   glGenTextures(1, &leftTex);
   glBindTexture(GL_TEXTURE_2D, leftTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -152,7 +159,7 @@ void Application::setupTextures() {
   //Texture2
   glGenTextures(1, &rightTex);
   glBindTexture(GL_TEXTURE_2D, rightTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -161,6 +168,8 @@ void Application::setupTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glBindTexture(GL_TEXTURE_2D, 0);
+
+  //TODO: free images here
 }
 
 void Application::setupBuffers() {
@@ -171,7 +180,8 @@ void Application::setupBuffers() {
       rectangle[count++] = vec3(i,j, 0);
     }
   }
-  //Now build indices
+  
+   //Now build indices
   indices.push_back(0);
   indices.push_back(bufferWidth);
   for(int i=1;i<bufferHeight;++i){
@@ -189,30 +199,48 @@ void Application::setupBuffers() {
   }
   
   uint indicesCount = indices.size();
-
-  //vector<uint> realIndices;
+  cout<<"Total number of triangles: "<<indicesCount<<"\n";
+  //Generate actual indices for each triangle
   for(int i=0;i<indices.size()-2;++i)
   {
     realIndices.emplace_back(indices[i]);
     realIndices.emplace_back(indices[i+1]);
     realIndices.emplace_back(indices[i+2]);
   }
-  std::ofstream fout("indices_dump");
-  for(int i=0;i<realIndices.size();i+=3) {fout<<realIndices[i]<<" "<<realIndices[i+1]<<" "<<realIndices[i+2]<<" \n";}
-  fout.close();
-  std::cout<<"Indices Count : "<<indicesCount<<"\n";
-
+  
+  //Now generate texture coordinates
+  float w_d = 1.0f/bufferWidth;
+  float h_d = 1.0f/bufferHeight;
+  texCoords.resize(bufferHeight*bufferWidth);
+  cout<<"w_d:"<<w_d<<"\n";
+  for(int i=0;i<=bufferHeight;i+=1){
+    for(int j=0;j<=bufferWidth;j+=1){
+      float x = i/(float)bufferWidth;
+      float y = j/(float)bufferHeight;
+      texCoords[i*bufferHeight + j] = (vec2(x,y));
+    }
+  }
+  cout<<"Number of textureCoordinates: "<<texCoords.size()<<"\n";
+ 
   //==========================
   //Create Vertex Array Object
   glGenVertexArrays(1, &drawVAO);
   glBindVertexArray(drawVAO);
 
+  //Position data
   glGenBuffers(1, &drawVBO);
   glBindBuffer(GL_ARRAY_BUFFER, drawVBO);
   glBufferData(GL_ARRAY_BUFFER, bufferWidth * bufferHeight * sizeof(glm::vec3), rectangle.data(), GL_STATIC_DRAW);
   // //Assign attribs
   glEnableVertexAttribArray(drawShader->attribute("position"));
   glVertexAttribPointer(drawShader->attribute("position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+  //Texture coordinates
+  glGenBuffers(1, &texCoordVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, texCoordVBO);
+  glBufferData(GL_ARRAY_BUFFER, bufferWidth * bufferHeight * sizeof(glm::vec2), texCoords.data(), GL_STATIC_DRAW);
+  glEnableVertexAttribArray(drawShader->attribute("texCoords"));
+  glVertexAttribPointer(drawShader->attribute("texCoords"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 
   //Bind index buffer
   glGenBuffers(1, &indexVBO);
