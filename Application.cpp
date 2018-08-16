@@ -51,7 +51,7 @@ void Application::run() {
     //Draw Left view
     glViewport(0,0,1920/2,960);
     
-    glUniform1i(drawShader->uniform("imageTexture"), 0);
+    glUniform1i(drawShader->uniform("imageTexture"), 0);  //Our left-texture is already attached at unit 0
     glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(MVP_cam1));
     glBindVertexArray(drawVAO);
     
@@ -60,23 +60,13 @@ void Application::run() {
     
     //Draw right view
     glViewport(1920/2,0,960,960);
-    glUniform1i(drawShader->uniform("imageTexture"), 1);
+    glUniform1i(drawShader->uniform("imageTexture"), 1);  //Our right-texture is already attached at unit 1
     glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(MVP_cam2));
-    
-    
+      
     glDrawElements(GL_TRIANGLES, realIndices.size(), GL_UNSIGNED_INT, 0);
-
-    //Unbind texture
-    //glBindTexture(GL_TEXTURE_2D, 0);
     
     window.swap();
   }
-}
-
-void Application::draw()
-{
-  
-
 }
 
 void Application::setupTextures() {
@@ -110,13 +100,14 @@ void Application::setupTextures() {
   glGenerateMipmap(GL_TEXTURE_2D);
   //glBindTexture(GL_TEXTURE_2D, 0);
 
-  //TODO: free images here
+  //Loading done. Now free images.
   stbi_image_free(left);
   stbi_image_free(right);
 }
 
 void Application::setupBuffers() {
 
+  //Fill up position and texture-coordinate arrays
   int count =0;
   for(float i=0;i<=bufferWidth;++i){
     for(float j=0;j<=bufferHeight;++j){
@@ -129,7 +120,7 @@ void Application::setupBuffers() {
   cout<<"Number of Vertices: "<<rectangle.size()<<"\n";
   cout<<"Number of textureCoordinates: "<<texCoords.size()<<"\n";
   
-   //Now build indices
+  //Now build indices
   bufferHeight+=1; bufferWidth+=1;
   indices.push_back(0);
   indices.push_back(bufferWidth);
@@ -158,7 +149,7 @@ void Application::setupBuffers() {
   }
   
   
- 
+  //Now upload to device-side buffers
   //==========================
   //Create Vertex Array Object
   glGenVertexArrays(1, &drawVAO);
