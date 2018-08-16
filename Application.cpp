@@ -8,12 +8,13 @@
 SDL_Event event;
 
 Application::Application() {
-  rectangle.resize(bufferWidth*bufferHeight);
+  //rectangle.resize(bufferWidth*bufferHeight);
+  //texCoords.resize(bufferHeight*bufferWidth);
   left = stbi_load("assets/left.jpg", &imgWidth, &imgHeight, &channels, 0);
-  right = stbi_load("assets/right.jpg", &imgWidth, &imgHeight, &channels, 0);
+//  right = stbi_load("assets/right.jpg", &imgWidth, &imgHeight, &channels, 0);
   cout<<"Image width: "<<imgWidth<<"\nImage height: "<<imgHeight<<"\nChannels: "<<channels<<"\n";
   if(left == nullptr) {cout<<"could not read first image file!"<<endl; exit(0);}
-  if(right == nullptr) {cout<<"could not read second image file!"<<endl; exit(0);}
+//  if(right == nullptr) {cout<<"could not read second image file!"<<endl; exit(0);}
   //cam.setPosition(glm::vec3(320, 240, 300));
   cam.setPosition(glm::vec3(0,0,0));
   glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
@@ -117,7 +118,7 @@ void Application::run() {
     glVertexAttribPointer(drawShader->attribute("texCoords"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-    glDrawElements(GL_TRIANGLE_STRIP, realIndices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, realIndices.size(), GL_UNSIGNED_INT, 0);
     //glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
     //glBindVertexArray(drawVAO);
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, bufferWidth*bufferHeight);
@@ -147,7 +148,7 @@ void Application::setupShaders() {
 void Application::setupTextures() {
   glGenTextures(1, &leftTex);
   glBindTexture(GL_TEXTURE_2D, leftTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -159,7 +160,7 @@ void Application::setupTextures() {
   //Texture2
   glGenTextures(1, &rightTex);
   glBindTexture(GL_TEXTURE_2D, rightTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -175,11 +176,17 @@ void Application::setupTextures() {
 void Application::setupBuffers() {
 
   int count =0;
-  for(int i=-bufferWidth/2;i<bufferWidth/2;++i){
-    for(int j=-bufferHeight/2;j<bufferHeight/2;++j){
-      rectangle[count++] = vec3(i,j, 0);
+  for(float i=-bufferWidth/2.0f;i<(float)bufferWidth/2.0f;++i){
+    for(float j=-bufferHeight/2.0f;j<(float)bufferHeight/2.0f;++j){
+      float x = (i+(bufferWidth/2.0f))/(float)bufferWidth;
+      float y = (j+(bufferHeight/2.0f))/(float)bufferHeight;
+      texCoords.push_back(vec2(x,y));
+      rectangle.push_back(vec3(i,j, 0));
+      //count++;
     }
   }
+  cout<<"Number of Vertices: "<<rectangle.size()<<"\n";
+  cout<<"Number of textureCoordinates: "<<texCoords.size()<<"\n";
   
    //Now build indices
   indices.push_back(0);
@@ -208,19 +215,7 @@ void Application::setupBuffers() {
     realIndices.emplace_back(indices[i+2]);
   }
   
-  //Now generate texture coordinates
-  float w_d = 1.0f/bufferWidth;
-  float h_d = 1.0f/bufferHeight;
-  texCoords.resize(bufferHeight*bufferWidth);
-  cout<<"w_d:"<<w_d<<"\n";
-  for(int i=0;i<=bufferHeight;i+=1){
-    for(int j=0;j<=bufferWidth;j+=1){
-      float x = i/(float)bufferWidth;
-      float y = j/(float)bufferHeight;
-      texCoords[i*bufferHeight + j] = (vec2(x,y));
-    }
-  }
-  cout<<"Number of textureCoordinates: "<<texCoords.size()<<"\n";
+  
  
   //==========================
   //Create Vertex Array Object
