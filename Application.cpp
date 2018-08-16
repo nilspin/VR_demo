@@ -11,10 +11,10 @@ Application::Application() {
   //rectangle.resize(bufferWidth*bufferHeight);
   //texCoords.resize(bufferHeight*bufferWidth);
   left = stbi_load("assets/left.jpg", &imgWidth, &imgHeight, &channels, 0);
-//  right = stbi_load("assets/right.jpg", &imgWidth, &imgHeight, &channels, 0);
+  right = stbi_load("assets/right.jpg", &imgWidth, &imgHeight, &channels, 0);
   cout<<"Image width: "<<imgWidth<<"\nImage height: "<<imgHeight<<"\nChannels: "<<channels<<"\n";
   if(left == nullptr) {cout<<"could not read first image file!"<<endl; exit(0);}
-//  if(right == nullptr) {cout<<"could not read second image file!"<<endl; exit(0);}
+  if(right == nullptr) {cout<<"could not read second image file!"<<endl; exit(0);}
   //cam.setPosition(glm::vec3(320, 240, 300));
   cam.setPosition(glm::vec3(0,0,0));
   //cam.setLookAt(glm::vec3(1,0,0));
@@ -45,15 +45,13 @@ void Application::run() {
 
     drawShader->use();
     
+    glViewport(0,0,1920/2,960);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, leftTex);
     glUniform1i(drawShader->uniform("imageTexture"), 0);
     glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(MVP));
-
     glBindVertexArray(drawVAO);
-    //inputSource.UploadDepthToTexture();
-
-
+    
     //Bind buffers
     glBindBuffer(GL_ARRAY_BUFFER, drawVBO);
     glEnableVertexAttribArray(drawShader->attribute("position"));
@@ -67,8 +65,38 @@ void Application::run() {
     glDrawElements(GL_TRIANGLES, realIndices.size(), GL_UNSIGNED_INT, 0);
     //glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    
+    //Draw right image
+    glViewport(1920/2,0,960,960);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, rightTex);
+    glUniform1i(drawShader->uniform("imageTexture"), 1);
+    glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(MVP));
+    glBindVertexArray(drawVAO);
+    
+    //Bind buffers
+    glBindBuffer(GL_ARRAY_BUFFER, drawVBO);
+    glEnableVertexAttribArray(drawShader->attribute("position"));
+    glVertexAttribPointer(drawShader->attribute("position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, texCoordVBO);
+    glEnableVertexAttribArray(drawShader->attribute("texCoords"));
+    glVertexAttribPointer(drawShader->attribute("texCoords"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
+    glDrawElements(GL_TRIANGLES, realIndices.size(), GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
     window.swap();
+
   }
+}
+
+void Application::draw()
+{
+  
+
 }
 
 void Application::setupTextures() {
@@ -87,7 +115,7 @@ void Application::setupTextures() {
   //Texture2
   glGenTextures(1, &rightTex);
   glBindTexture(GL_TEXTURE_2D, rightTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
 
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -100,6 +128,8 @@ void Application::setupTextures() {
   glBindTexture(GL_TEXTURE_2D, 0);
 
   //TODO: free images here
+  stbi_image_free(left);
+  stbi_image_free(right);
 }
 
 void Application::setupBuffers() {
@@ -250,9 +280,4 @@ void Application::processEvents()
         break;
     }
   }
-}
-
-Application::~Application() {
-  stbi_image_free(left);
-  stbi_image_free(right);
 }

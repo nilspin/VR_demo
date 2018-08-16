@@ -17,11 +17,11 @@ class Application
 public:
 	void run();
 	Application();
-	~Application();
 	void setupShaders();
 	void setupBuffers();
 	void setupTextures();
 	void processEvents();
+	void draw();
 private:
 	//Dims
 	int imgWidth = 0;
@@ -36,6 +36,7 @@ private:
 	//SDL_Event e;
 	
 	bool quit=false;
+	bool isLeft = true;	//flag to alternate between left and right textures
 
 	//Camera & transforms
 	Camera cam;
