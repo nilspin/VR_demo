@@ -25,32 +25,25 @@ void Camera::rotate()
 	lastTime = currentTime;
 
 }
-void Camera::computeMatricesFromInputs(){
-
-	// glfwGetTime is called only once, the first time this function is called
-
-	// Compute time difference between current and last frame
-
-}
 
 void Camera::move(CameraDirection dir)
 {
 	switch (dir)
 	{
 	case FORWARD:	// Move forward
-		position += direction * timeDifference * speed;
+		position += direction * speed;
 		break;
 
 	case BACK:		// Move backward
-		position -= direction * timeDifference * speed;
+		position -= direction * speed;
 		break;
 
 	case RIGHT:		// Move right
-		position += right * timeDifference * speed;
+		position += right * speed;
 		break;
 
 	case LEFT:		// Move left
-		position -= right * timeDifference * speed;
+		position -= right * speed;
 		break;
 
 	case UP:		// Look up

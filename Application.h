@@ -39,14 +39,18 @@ private:
 	bool isLeft = true;	//flag to alternate between left and right textures
 
 	//Camera & transforms
-	Camera cam;
+	Camera cam1, cam2;
 	glm::mat4 model = glm::mat4(1);
-	glm::mat4 view = glm::mat4(1);
+	glm::mat4 view_cam1 = glm::mat4(1);
+	glm::mat4 view_cam2 = glm::mat4(1);
 	glm::mat4 proj = glm::perspective(80.0f, 1.0f, 0.1f, 1000.0f);
-	glm::mat4 MVP = glm::mat4(1);
+	glm::mat4 MVP_cam1 = glm::mat4(1);
+	glm::mat4 MVP_cam2 = glm::mat4(1);
 
-	//Shader
-	unique_ptr<ShaderProgram> drawShader;
+	//Shaders
+	unique_ptr<ShaderProgram> drawShader;// Draws regular quad
+	unique_ptr<ShaderProgram> cylinderTransformShader;//Draws cylinder projection
+	unique_ptr<ShaderProgram> barrelProjShader;//Draws barrel projection
 	
 	
 	//Texture & images

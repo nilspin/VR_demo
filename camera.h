@@ -32,7 +32,7 @@ private :
 	// Initial vertical angle : none
 	float verticalAngle = 0.0f;
 	// Initial Field of View
-	float initialFoV = 45.0f;
+	float initialFoV = 80.0f;
 	// Actual direction
 	glm::vec3 direction;
 	// Right vector
