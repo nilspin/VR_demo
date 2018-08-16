@@ -20,6 +20,7 @@ public:
 	void setupShaders();
 	void setupBuffers();
 	void setupTextures();
+	void processEvents();
 private:
 	//Dims
 	int imgWidth = 0;

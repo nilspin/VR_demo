@@ -18,75 +18,16 @@ Application::Application() {
   //cam.setPosition(glm::vec3(320, 240, 300));
   cam.setPosition(glm::vec3(0,0,0));
   glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+  setupTextures();
   setupShaders();
   setupBuffers();
-  setupTextures();
 }
 
 void Application::run() {
   while (!quit)
   {
-    while (SDL_PollEvent(&event) != 0)
-    {
-      switch (event.type)
-      {
-        case SDL_QUIT:	//if X windowkey is pressed then quit
-          quit = true;
-
-        case SDL_KEYDOWN:	//if ESC is pressed then quit
-
-          switch (event.key.keysym.sym)
-          {
-            case SDLK_q:
-              quit = true;
-              break;
-
-            case SDLK_w:
-              cam.move(FORWARD);
-              break;
-
-            case SDLK_s:
-              cam.move(BACK);
-              break;
-
-            case SDLK_a:
-              cam.move(LEFT);
-              break;
-
-            case SDLK_d:
-              cam.move(RIGHT);
-              break;
-
-            case SDLK_UP:
-              cam.move(UP);
-              break;
-
-            case SDLK_DOWN:
-              cam.move(DOWN);
-              break;
-
-            case SDLK_LEFT:
-              cam.move(ROT_LEFT);
-              break;
-
-            case SDLK_RIGHT:
-              cam.move(ROT_RIGHT);
-              break;
-
-
-            case SDLK_r:
-              cam.reset();
-              std::cout << "Reset button pressed \n";
-              break;
-          }
-          break;
-
-        case SDL_MOUSEMOTION:
-          cam.rotate();
-          break;
-      }
-    }
-
+    
+    processEvents();
     //First things first
     cam.calcMatrices();
     GLfloat time = SDL_GetTicks();
@@ -98,10 +39,11 @@ void Application::run() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glBindTexture(GL_TEXTURE_2D, leftTex);
     drawShader->use();
 
-    glBindTexture(GL_TEXTURE_2D, leftTex);
-    //glUniform1i(drawShader->uniform("imageTexture"), leftTex);
+    
+    glUniform1i(drawShader->uniform("imageTexture"), leftTex);
     glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(MVP));
 
     glBindVertexArray(drawVAO);
@@ -120,47 +62,30 @@ void Application::run() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
     glDrawElements(GL_TRIANGLES, realIndices.size(), GL_UNSIGNED_INT, 0);
     //glDrawElements(GL_LINES, realIndices.size(), GL_UNSIGNED_INT, 0);
-    //glBindVertexArray(drawVAO);
-    //glDrawArrays(GL_TRIANGLE_STRIP, 0, bufferWidth*bufferHeight);
-    //glDrawArrays(GL_POINTS, 0, bufferWidth*bufferHeight);
-    //second depthMap
-    //glUniform1i(drawShader->uniform("depthTexture"), 1);
-    //glUniformMatrix4fv(drawShader->uniform("MVP"), 1, false, glm::value_ptr(proj*view*localTransform));
-    //glUniform3f(drawShader->uniform("shadeColor"), 0, 1, 0);
-    //glDrawArrays(GL_POINTS, 0, bufferWidth*bufferHeight);
-    //
-    mat4 newMVP = proj*view;//*scaleMat
-
+    glBindTexture(GL_TEXTURE_2D, 0);
     window.swap();
   }
-}
-
-void Application::setupShaders() {
-  drawShader = (make_unique<ShaderProgram>());
-  drawShader->initFromFiles("shaders/draw.vert", "shaders/draw.frag");
-  drawShader->addAttribute("position");
-  drawShader->addAttribute("texCoords");
-  //drawShader->addUniform("imageTexture");
-  drawShader->addUniform("MVP");
-  //drawShader->addUniform("shadeColor");
 }
 
 void Application::setupTextures() {
   glGenTextures(1, &leftTex);
   glBindTexture(GL_TEXTURE_2D, leftTex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
+  glGenerateMipmap(GL_TEXTURE_2D);
   //filtering
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glBindTexture(GL_TEXTURE_2D,0);
 
   //Texture2
   glGenTextures(1, &rightTex);
   glBindTexture(GL_TEXTURE_2D, rightTex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
+  glGenerateMipmap(GL_TEXTURE_2D);
   //filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -248,6 +173,79 @@ void Application::setupBuffers() {
 
 }
 
+void Application::setupShaders() {
+  drawShader = (make_unique<ShaderProgram>());
+  drawShader->initFromFiles("shaders/draw.vert", "shaders/draw.frag");
+  drawShader->addAttribute("position");
+  drawShader->addAttribute("texCoords");
+  drawShader->addUniform("imageTexture");
+  drawShader->addUniform("MVP");
+  //drawShader->addUniform("shadeColor");
+}
+
+void Application::processEvents()
+{
+  while (SDL_PollEvent(&event) != 0)
+  {
+    switch (event.type)
+    {
+      case SDL_QUIT:	//if X windowkey is pressed then quit
+        quit = true;
+
+      case SDL_KEYDOWN:	//if ESC is pressed then quit
+
+        switch (event.key.keysym.sym)
+        {
+          case SDLK_q:
+            quit = true;
+            break;
+
+          case SDLK_w:
+            cam.move(FORWARD);
+            break;
+
+          case SDLK_s:
+            cam.move(BACK);
+            break;
+
+          case SDLK_a:
+            cam.move(LEFT);
+            break;
+
+          case SDLK_d:
+            cam.move(RIGHT);
+            break;
+
+          case SDLK_UP:
+            cam.move(UP);
+            break;
+
+          case SDLK_DOWN:
+            cam.move(DOWN);
+            break;
+
+          case SDLK_LEFT:
+            cam.move(ROT_LEFT);
+            break;
+
+          case SDLK_RIGHT:
+            cam.move(ROT_RIGHT);
+            break;
+
+
+          case SDLK_r:
+            cam.reset();
+            std::cout << "Reset button pressed \n";
+            break;
+        }
+        break;
+
+      case SDL_MOUSEMOTION:
+        cam.rotate();
+        break;
+    }
+  }
+}
 
 Application::~Application() {
   stbi_image_free(left);

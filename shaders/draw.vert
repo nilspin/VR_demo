@@ -1,7 +1,7 @@
 #version 430
 
 in vec2 texCoords;
-out vec2 texCoord;
+out vec2 UV;
 in vec3 position;
 //out vec3 v_position;
 uniform mat4 MVP;
@@ -11,7 +11,7 @@ float R = 30.0;
 
 void main()
 {
-    texCoord = texCoords;
+    UV = texCoords;
     vec3 pos = position;
     float x = R*cos(pos.x*1.9*pi/30);
     float y = pos.y;
